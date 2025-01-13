@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Viewer Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    input,
+    button {
+      margin: 5px;
+      padding: 10px;
+    }
+
+    .image-container img {
+      max-height: 400px;
+      margin: 20px auto;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Image Viewer Tool</h1>
+  <!-- Ligne 1 : Input et bouton -->
+  <div>
+    <input id="apiUrl" type="text" placeholder="Enter API URL" style="width: 70%;">
+    <button id="callApi">Call</button>
+  </div>
+  <!-- Ligne 2 : Contrôles -->
+  <div class="controls">
+    <button id="prevButton" disabled>&lt;-</button>
+    <span id="imageInfo">1/1</span>
+    <button id="nextButton" disabled>-&gt;</button>
+  </div>
+  <!-- Ligne 3 : ID et format de l'image -->
+  <div>
+    <span id="imageDetails">ID: - (0x0)</span>
+    <button id="saveButton" disabled>Save Photo</button>
+  </div>
+  <!-- Ligne 4 : Image -->
+  <div class="image-container">
+    <img id="currentImage" src="" alt="No image available">
+  </div>
+  <script>
+    const apiUrlInput = document.getElementById('apiUrl');
+    const callApiButton = document.getElementById('callApi');
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    const imageInfo = document.getElementById('imageInfo');
+    const imageDetails = document.getElementById('imageDetails');
+    const currentImage = document.getElementById('currentImage');
+    const saveButton = document.getElementById('saveButton');
+
+    const cookie = "eyJraWQiOiJFNTdZZHJ1SHBsQWp1MmNObzFEb3JIM2oyN0J1NS1zX09QNVB3UGlobjVNIiwiYWxnIjoiUFMyNTYifQ.eyJhcHBfaWQiOjQsImNsaWVudF9pZCI6IndlYiIsImF1ZCI6ImZyLmNvcmUuYXBpIiwiaWF0IjoxNzM2NzQ0OTA0LCJzaWQiOiI4Y2IyODAxZC0xNzM2NTgyNzcwIiwic2NvcGUiOiJwdWJsaWMiLCJleHAiOjE3MzY3NTIxMDQsInB1cnBvc2UiOiJhY2Nlc3MifQ.ospxBI9rXLP-SThhJKBTvQ2bD3QxyrXj8XlHThXHjm4CHC4oz_xRNL-8x_aIjqrPwSB5o7ggpR6-OlswDxOcqO23feMF5d_d573lhXSobymedPjokaWxzcm8H-4bx04YsiaPs8yA5d7Rw5ManftbMlCPmxmqnyAu7ESTqOFyLGbBosEMyWR3w3ERkg2Db-K5xUk7_VSWMCNGD31ufQ5aa9YaofhY5lxcUTgIkB7zAA4QVZNlF_pl9cJdX_iZqvQGupNNM1QyESAcTqXrBXbVixledeYJri83E6SomAkUtEKnmaYq83y0oOsQu23amzXLXlym2emxIqcjUn9w6NOikQ"
+    apiUrlInput.value = "https://www.vinted.fr/api/v2/catalog/items?page=1&catalog_ids=77"
+
+    let items = [];
+    let currentIndex = 0;
+
+    saveButton.addEventListener('click', async () => {
+      if (items.length === 0 || !items[currentIndex]) return;
+
+      const item = items[currentIndex];
+      try {
+        const response = await fetch('http://localhost:5001/save_image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url: item.photo.url, // Image URL
+            id: item.id,         // Image ID
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          alert(`Error: ${data.error}`);
+        }
+      } catch (error) {
+        alert(`Request failed: ${error.message}`);
+      }
+    });
+
+    callApiButton.addEventListener('click', async () => {
+      const url = apiUrlInput.value.trim();
+      if (!url) {
+        alert('Please enter a valid API URL');
+        return;
+      }
+      try {
+        const proxy_url = "http://localhost:5001/proxy?url=" + encodeURIComponent(url) + "&cookie=" + encodeURIComponent(cookie);
+        const response = await fetch(proxy_url, {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json, text/plain, */*'
+          }
+        })
+
+        const data = await response.json();
+        items = data.items || [];
+        if (items.length === 0) throw new Error('No items found');
+        currentIndex = 0;
+        updateUI();
+      } catch (error) {
+        alert('Error fetching API: ' + error.message);
+      }
+    });
+
+    prevButton.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateUI();
+      }
+    });
+
+    nextButton.addEventListener('click', () => {
+      if (currentIndex < items.length - 1) {
+        currentIndex++;
+        updateUI();
+      }
+    });
+
+    function updateUI() {
+      if (items.length === 0) {
+        currentImage.src = '';
+        imageInfo.textContent = '0/0';
+        imageDetails.textContent = 'ID: - (0x0)';
+        prevButton.disabled = true;
+        nextButton.disabled = true;
+        saveButton.disabled = true;
+        return;
+      }
+      const item = items[currentIndex];
+      navigator.clipboard.writeText(`B_${item.id}`);
+      currentImage.src = item.photo.url;
+      const img = new Image();
+      img.onload = () => {
+        imageDetails.textContent = `ID: ${item.id} (${img.naturalWidth}x${img.naturalHeight})`;
+      };
+      img.src = item.photo.url;
+      imageInfo.textContent = `${currentIndex + 1}/${items.length}`;
+      prevButton.disabled = currentIndex === 0;
+      nextButton.disabled = currentIndex === items.length - 1;
+      saveButton.disabled = false;
+    }
+  </script>
+</body>
+
+</html>
