@@ -6,18 +6,22 @@ import os
 # Charger le modèle YOLOv8 pré-entraîné
 model = YOLO('kesimeg/yolov8n-clothing-detection')  # Utilisez un modèle léger comme yolov8n pour commencer.
 
+ALLOWED_EXT = ('.jpeg', '.jpg')
+
 # Dossier des images
-input_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "img")  # Dossier où se trouvent les images
-output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")  # Dossier où les images traitées seront sauvegardées
+input_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "img", "target")  # Dossier où se trouvent les images
+output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "img", "target_crop")  # Dossier où les images traitées seront sauvegardées
 
 # Vérifier si le dossier de sortie existe, sinon, le créer
 os.makedirs(output_folder, exist_ok=True)
 
 target_label = 'clothing'
+no_boxes_files = []
+no_target_label_files = []
 
 # Parcourir tous les fichiers du dossier 'img' dont le nom commence par 'A_'
 for filename in os.listdir(input_folder):
-    if not filename.startswith('A_'):  # Filtrer par extension d'image
+    if not filename.lower().endswith(ALLOWED_EXT):
         continue
 
     image_path = os.path.join(input_folder, filename)
@@ -31,6 +35,7 @@ for filename in os.listdir(input_folder):
     # Extraire les résultats de détection (boîtes englobantes, classes, etc.)
     if len(results[0].boxes) == 0:
         print(f"Object not detected for {filename}")
+        no_boxes_files.append(filename)
         continue
 
     detected = False
@@ -67,7 +72,7 @@ for filename in os.listdir(input_folder):
         padded_image[y_offset:y_offset + new_h, x_offset:x_offset + new_w] = resized_image
 
         # Sauvegarder l'image
-        save_path = os.path.join(output_folder, f"cropped_{filename}")
+        save_path = os.path.join(output_folder, f"{filename}")
         cv2.imwrite(save_path, padded_image)
         print(f"Image sauvegardée sous {save_path}")
 
@@ -75,3 +80,8 @@ for filename in os.listdir(input_folder):
 
     if not detected:
         print(f"Label {target_label} not detected for {filename}")
+        no_target_label_files.append(filename)
+
+print("Process is finished !")
+print(f"Files with no detected objects: {no_boxes_files}")
+print(f"Files with no detected target label: {no_target_label_files}")
