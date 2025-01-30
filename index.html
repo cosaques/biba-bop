@@ -37,6 +37,22 @@
             color: #97003c;
             margin-bottom: 20px;
         }
+        video {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .prototype-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background: #97003c;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+        }
         footer {
             background: #f4f4f4;
             color: #777;
@@ -67,7 +83,18 @@
             Avec Biba-Bop, nous rendons ces services accessibles à un public plus large et aidons les professionnels à se concentrer sur l'essentiel :
             aider leurs clients à retrouver confiance et style.
         </p>
-        <p>Plateforme en cours de développement. Plus d'informations bientôt !</p>
+
+        <!-- Intégration de la vidéo -->
+        <h2>Présentation de Biba-Bop</h2>
+        <video controls>
+            <source src="video.mp4" type="video/mp4">
+            Votre navigateur ne supporte pas la lecture de vidéos.
+        </video>
+
+        <!-- Lien vers le prototype -->
+        <h2>Essayez notre prototype</h2>
+        <a class="prototype-link" href="https://biba-bop.streamlit.app/" target="_blank">Tester la transformation des photos</a>
+
         <p><strong>Contactez-nous :</strong> <a href="mailto:contact@biba-bop.fr">contact@biba-bop.fr</a></p>
     </main>
     <footer>
