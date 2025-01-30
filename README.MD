@@ -9,3 +9,12 @@
 -H "referer: https://www.vinted.fr" \
 -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" \
 --output -
+
+## Resources
+* [original project](https://github.com/phillipi/pix2pix)
+  * [pytorch version](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix)
+* [tutorial how img2img with tensorflow](https://www.tensorflow.org/tutorials/generative/pix2pix)
+* [real time pix2pix turbo](https://huggingface.co/spaces/radames/real-time-pix2pix-turbo)
+
+## Ideas
+* ControlNet - I give for all images a silhouette of ideal t-shirt to control the generation.

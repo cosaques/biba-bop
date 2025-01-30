@@ -1,5 +1,6 @@
 utils/img
 utils/output
+models
 
 .DS_Store
 *.pt
